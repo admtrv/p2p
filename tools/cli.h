@@ -13,6 +13,8 @@
 class CLI {
 public:
     CLI(Node* node);
+    ~CLI();
+
     void run();
 
 private:

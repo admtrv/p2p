@@ -1,17 +1,31 @@
-/*
- *  cli.cpp
- */
-
+#include <readline/readline.h>
+#include <readline/history.h>
 #include "cli.h"
 
-CLI::CLI(Node* node) : node(node) {}
+CLI::CLI(Node* node) : node(node)
+{
+    read_history(".cli_history");
+}
+
+CLI::~CLI()
+{
+    write_history(".cli_history");
+}
 
 void CLI::run() {
-    std::string command;
+    char* input;
     while (true)
     {
-        std::cout << "> ";
-        std::getline(std::cin, command);
+        input = readline("> ");
+
+        if (!input)
+        {
+            break;
+        }
+
+        std::string command(input);
+        add_history(input);
+        free(input);
 
         if (command.substr(0, 14) == "proc node inf ")
         {
@@ -27,21 +41,18 @@ void CLI::run() {
         else if (command.substr(0, 15) == "proc node port ")
         {
             int port = std::stoi(command.substr(15));
-
             node->set_port(port);
         }
 
         else if (command.substr(0, 15) == "proc node dest ")
         {
             std::string ip_and_port = command.substr(15);
-
             size_t separator = ip_and_port.find(' ');
 
             if (separator != std::string::npos)
             {
                 std::string ip = ip_and_port.substr(0, separator);
                 int port = std::stoi(ip_and_port.substr(separator + 1));
-
                 node->set_dest(ip, port);
             }
         }

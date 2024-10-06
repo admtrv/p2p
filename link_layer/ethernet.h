@@ -37,10 +37,16 @@
 #include <cstring>
 #include <iostream>
 #include <linux/if_ether.h>
+#include <net/if.h>
+#include <tuple>
+#include <sys/ioctl.h>
 
 #define ETHERNET_TYPE_IP 0x0800
 #define ETHERNET_TYPE_ARP 0x0806
 #define ETHERNET_HEADER_LEN 14
+
+#define NULL_ETH_ADDR {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+#define BROADCAST_ETH_ADDR {0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 
 // Ethernet header structure
 struct ethernet_header {
@@ -50,9 +56,12 @@ struct ethernet_header {
 };
 
 struct ethernet_protocol {
-    ethernet_header etehernet_header;
+    ethernet_header eth_hdr;
     unsigned char* payload;
+
+    void to_buf(ethernet_protocol& ethernet, unsigned char* buffer, size_t payload_length);
+    static void from_buf(ethernet_protocol& ethernet, unsigned char* buffer);
+    static bool get_eth_addr(int sock, const char* interface, unsigned char* eth_addr);
+    static std::string eth_to_str(const unsigned char* eth_addr);
 };
 
-void to_buf(ethernet_protocol& ethernet, unsigned char* buffer);
-void from_buf(ethernet_header& ethernet, unsigned char* buffer);

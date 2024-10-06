@@ -1,3 +1,7 @@
+/*
+ *  cli.h
+ */
+
 #pragma once
 
 #include <iostream>
@@ -8,7 +12,7 @@
 
 class CLI {
 public:
-    CLI();
+    CLI(Node* node);
     void run();
 
 private:

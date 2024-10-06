@@ -1,42 +1,70 @@
+/*
+ *  arp.cpp
+ */
+
 #include "arp.h"
 
-void to_buf(arp_header& arp, unsigned char* buffer) {
-    buffer[0] = arp.hw_addr_type >> 8;
-    buffer[1] = arp.hw_addr_type & 0xFF;
+void arp_header::to_buf(arp_header& arp, unsigned char* buffer)
+{
+    // Hardware Type (2 bytes)
+    uint16_t hw_type_network = htons(ARP_HW_TYPE_ETHERNET);
+    memcpy(buffer, &hw_type_network, sizeof(hw_type_network));
 
-    buffer[2] = arp.protocol_addr_type >> 8;
-    buffer[3] = arp.protocol_addr_type & 0xFF;
+    // Protocol Type (2 bytes)
+    uint16_t proto_type_network = htons(ARP_PROTOCOL_ADDR_TYPE_IPV4);
+    memcpy(buffer + 2, &proto_type_network, sizeof(proto_type_network));
 
-    buffer[4] = arp.hw_addr_len;
+    // Hardware Address Length (1 byte)
+    buffer[4] = ARP_HW_ADDR_LEN;
 
-    buffer[5] = arp.protocol_addr_len;
+    // Protocol Address Length (1 byte)
+    buffer[5] = ARP_PROTOCOL_ADDR_LEN;
 
-    buffer[6] = arp.operation >> 8;
-    buffer[7] = arp.operation & 0xFF;
+    // Opcode (2 bytes)
+    uint16_t opcode_network = htons(arp.operation);
+    memcpy(buffer + 6, &opcode_network, sizeof(opcode_network));
 
-    memcpy(buffer + 8, arp.src_hw_addr, ETH_ALEN);
+    // Sender Hardware Address (6 bytes)
+    memcpy(buffer + 8, arp.src_hw_addr, ARP_HW_ADDR_LEN);
 
-    buffer[14] = (arp.src_protocol_addr >> 24) & 0xFF;
-    buffer[15] = (arp.src_protocol_addr >> 16) & 0xFF;
-    buffer[16] = (arp.src_protocol_addr >> 8) & 0xFF;
-    buffer[17] = arp.src_protocol_addr & 0xFF;
+    // Sender Protocol Address (4 bytes)
+    uint32_t src_proto_addr_network = arp.src_protocol_addr;
+    memcpy(buffer + 14, &src_proto_addr_network, sizeof(src_proto_addr_network));
 
-    memcpy(buffer + 18, arp.tgt_hw_addr, ETH_ALEN);
+    // Target Hardware Address (6 bytes)
+    memcpy(buffer + 18, arp.tgt_hw_addr, ARP_HW_ADDR_LEN);
 
-    buffer[24] = (arp.tgt_protocol_addr >> 24) & 0xFF;
-    buffer[25] = (arp.tgt_protocol_addr >> 16) & 0xFF;
-    buffer[26] = (arp.tgt_protocol_addr >> 8) & 0xFF;
-    buffer[27] = arp.tgt_protocol_addr & 0xFF;
+    // Target Protocol Address (4 bytes)
+    uint32_t tgt_proto_addr_network = arp.tgt_protocol_addr;
+    memcpy(buffer + 24, &tgt_proto_addr_network, sizeof(tgt_proto_addr_network));
 }
 
-void from_buf(arp_header& arp, unsigned char* buffer) {
-    arp.hw_addr_type = (buffer[0] << 8) | buffer[1];
-    arp.protocol_addr_type = (buffer[2] << 8) | buffer[3];
+void arp_header::from_buf(arp_header& arp, unsigned char* buffer)
+{
+    // Hardware Type (2 bytes)
+    arp.hw_addr_type = ntohs(*(uint16_t*)(buffer));
+
+    // Protocol Type (2 bytes)
+    arp.protocol_addr_type = ntohs(*(uint16_t*)(buffer + 2));
+
+    // Hardware Address Length (1 byte)
     arp.hw_addr_len = buffer[4];
+
+    // Protocol Address Length (1 byte)
     arp.protocol_addr_len = buffer[5];
-    arp.operation = (buffer[6] << 8) | buffer[7];
-    memcpy(arp.src_hw_addr, buffer + 8, ETH_ALEN);
-    arp.src_protocol_addr = (buffer[14] << 24) | (buffer[15] << 16) | (buffer[16] << 8) | buffer[17];
-    memcpy(arp.tgt_hw_addr, buffer + 18, ETH_ALEN);
-    arp.tgt_protocol_addr = (buffer[24] << 24) | (buffer[25] << 16) | (buffer[26] << 8) | buffer[27];
+
+    // Opcode (2 bytes)
+    arp.operation = ntohs(*(uint16_t*)(buffer + 6));
+
+    // Sender Hardware Address (6 bytes)
+    memcpy(arp.src_hw_addr, buffer + 8, ARP_HW_ADDR_LEN);
+
+    // Sender Protocol Address (4 bytes)
+    arp.src_protocol_addr = ntohl(*(uint32_t*)(buffer + 14));
+
+    // Target Hardware Address (6 bytes)
+    memcpy(arp.tgt_hw_addr, buffer + 18, ARP_HW_ADDR_LEN);
+
+    // Target Protocol Address (4 bytes)
+    arp.tgt_protocol_addr = ntohl(*(uint32_t*)(buffer + 24));
 }

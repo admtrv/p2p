@@ -29,7 +29,6 @@
  *  publication by the IRSG are not a candidate for any level of Internet
  *  Standard; see Section 2 of RFC 5741.
  *
- *
  * Reference: https://datatracker.ietf.org/doc/html/rfc6747
  */
 
@@ -41,11 +40,12 @@
 #include <arpa/inet.h>
 #include <linux/if_ether.h>
 
-#define ARP_HW_TYPE_ETHERNET 1
+#define ARP_HW_TYPE_ETHERNET 0x0001
 #define ARP_PROTOCOL_ADDR_TYPE_IPV4 0x0800
-#define ARP_PROTOCOL_ADDR_LEN 4
-#define ARP_OPERATION_REQUEST 1
-#define ARP_OPERATION_REPLY 2
+#define ARP_HW_ADDR_LEN 0x06
+#define ARP_PROTOCOL_ADDR_LEN 0x04
+#define ARP_OPERATION_REQUEST 0x0001
+#define ARP_OPERATION_REPLY 0x0002
 
 struct arp_header {
     uint16_t hw_addr_type;
@@ -58,7 +58,8 @@ struct arp_header {
     uint32_t src_protocol_addr;
     unsigned char tgt_hw_addr[ETH_ALEN];
     uint32_t tgt_protocol_addr;
+
+    static void to_buf(arp_header& arp, unsigned char* buffer);
+    static void from_buf(arp_header& arp, unsigned char* buffer);
 };
 
-void to_buf(arp_header& arp, unsigned char* buffer);
-void from_buf(arp_header& arp, unsigned char* buffer);

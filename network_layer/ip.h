@@ -38,6 +38,10 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
+#include <linux/if_ether.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
 
 #define IP_HEAD_IPV4 0x4
 #define IP_HEAD_INTERNET_HEAD_LEN 0x5
@@ -59,12 +63,14 @@ struct ip_header {
 };
 
 struct ip_protocol {
-    ip_header ip_header;
+    ip_header ip_hdr;
     unsigned char* payload;
+
+    void to_buf(ip_protocol& ip, unsigned char* buffer);
+    void from_buf(ip_protocol& ip, unsigned char* buffer);
+
+    uint16_t calculate_checksum(ip_protocol& ip);
+    bool check_checksum(ip_protocol& ip);
+
+    static bool get_ip_addr(int sock, const char* interface, uint32_t* ip_addr);
 };
-
-void to_buf(ip_protocol& ip, unsigned char* buffer);
-void from_buf(ip_protocol& ip, unsigned char* buffer);
-
-uint16_t calculate_checksum(ip_protocol& ip);
-bool check_checksum(ip_protocol& ip);

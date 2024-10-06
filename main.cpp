@@ -5,7 +5,9 @@
 
 int main()
 {
-    CLI cli;
+    Node node;
+
+    CLI cli(&node);
     cli.run();
 
     return 0;
